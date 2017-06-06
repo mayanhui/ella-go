@@ -1,5 +1,5 @@
-//package dao
-package main
+package dao
+//package main
 
 import (
 	"database/sql"
@@ -141,11 +141,34 @@ type Region struct {
 }
 
 //needUpdate()
-
+func needUpdate(regions []Region) bool {
+	if len(regions) != getTotalNumber() {
+		return true
+	}
+	return false
+}
 
 
 
 //batchUpdate()
+func batchUpdate(regions []Region)  {
+	db,err := sql.Open("mysql","hbase:hbase@/hbase?charset=utf8")
+	if nil != err {
+		panic(err.Error())
+	}
+	stmt,err := db.Prepare("INSERT INTO hbase.regions(region_name, update_time) VALUES(?, ?)")
+	if nil != err {
+		panic(err)
+	}
+	for index,region := range regions{
+		fmt.Println(index,region)
+		stmt.Exec(region.regionName,region.updateTime)
+	}
+
+	defer stmt.Close()
+	defer db.Close()
+
+}
 
 func main() {
 	var tableName string = "t1"
@@ -155,6 +178,8 @@ func main() {
 	getTotalNumber()
 	fmt.Println(list())
 
-	
+	fmt.Println(needUpdate(list()))
+
+	//batchUpdate(list())
 
 }
